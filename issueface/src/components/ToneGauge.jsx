@@ -1,16 +1,15 @@
 import React from 'react';
 
-function ToneGauge({ tone, label }) {
+function ToneGauge({ tone, showValue = true }) {
   const pct = ((tone + 5) / 10) * 100;
   const color = tone <= -0.5 ? '#c1440e' : tone >= 0.5 ? '#1a6b3c' : '#8a8070';
-  const sentiment = tone <= -0.5 ? '부정적' : tone >= 0.5 ? '긍정적' : '중립적';
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between text-xs font-mono">
-        <span className="text-muted">-5</span>
-        <span className="font-bold text-ink">{label}</span>
-        <span className="text-muted">+5</span>
+      <div className="flex justify-between text-xs font-body font-bold">
+        <span className="text-accent">부정적</span>
+        <span className="text-muted">중립적</span>
+        <span className="text-green-700">긍정적</span>
       </div>
       <div className="relative h-3 bg-parchment border border-border rounded-full overflow-hidden">
         <div
@@ -22,9 +21,10 @@ function ToneGauge({ tone, label }) {
           style={{ left: `calc(${pct}% - 6px)` }}
         />
       </div>
-      <div className="flex justify-between items-center">
-        <span className="font-mono font-bold text-lg" style={{ color }}>{tone > 0 ? '+' : ''}{tone.toFixed(2)}</span>
-        <span className="text-xs font-body text-muted">{sentiment}</span>
+      <div className={`flex items-center ${showValue ? 'justify-between' : 'justify-end'}`}>
+        {showValue && (
+          <span className="font-mono font-bold text-lg" style={{ color }}>{tone > 0 ? '+' : ''}{tone.toFixed(2)}</span>
+        )}
       </div>
     </div>
   );
