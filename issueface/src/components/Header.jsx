@@ -18,6 +18,12 @@ function Header() {
           >
             소개
           </Link>
+          <Link
+            to="/history"
+            className="font-body text-sm font-medium text-muted hover:text-ink transition-colors px-3 py-1.5"
+          >
+            히스토리
+          </Link>
           <button
             onClick={() => setShowUsage(true)}
             className="btn-secondary text-sm"

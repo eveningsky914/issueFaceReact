@@ -2,27 +2,21 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import ToneGauge from './ToneGauge';
 
-// tone -5~+5, 중립 기준 -1~+1
 function getSentiment(tone) {
-  if (tone <= -3) return '매우 부정적';
-  if (tone <= -1) return '부정적';
-  if (tone < 1)  return '중립적';
-  if (tone < 3)  return '긍정적';
-  return '매우 긍정적';
+  if (tone <= -0.5) return '부정적';
+  if (tone >= 0.5) return '긍정적';
+  return '중립적';
 }
 
 function getEmoji(tone) {
-  if (tone <= -3) return '😡';
-  if (tone <= -1) return '😟';
-  if (tone < 1)  return '😐';
-  if (tone < 3)  return '😊';
-  return '😄';
+  if (tone <= -0.5) return '😟';
+  if (tone >= 0.5) return '😊';
+  return '😐';
 }
 
 function CountryCard({ countryCode, countryName, flag, data }) {
   const navigate = useNavigate();
 
-  // 기사 없으면 카드 숨김
   if (!data?.hasData) return null;
 
   const sentiment = getSentiment(data.tone);
@@ -33,7 +27,6 @@ function CountryCard({ countryCode, countryName, flag, data }) {
 
   return (
     <div className="card p-5 flex flex-col gap-4 animate-slide-up">
-      {/* 헤더 */}
       <div className="flex items-center gap-3">
         <span className="text-3xl">{flag}</span>
         <div>
@@ -43,15 +36,12 @@ function CountryCard({ countryCode, countryName, flag, data }) {
         <span className="ml-auto text-3xl" title={sentiment}>{emoji}</span>
       </div>
 
-      {/* Tone 게이지 */}
       <ToneGauge tone={data.tone} label="Tone" />
 
-      {/* 요약 */}
       <div className="bg-parchment border border-border rounded-sm px-3 py-2">
         <p className="text-xs font-body text-muted leading-relaxed">{data.summary}</p>
       </div>
 
-      {/* 핵심 보도 표현 */}
       <div>
         <p className="section-label mb-2">{hasKeyPhrases ? '핵심 보도 표현' : '핵심어'}</p>
         {data.frameSummary && (
@@ -82,7 +72,6 @@ function CountryCard({ countryCode, countryName, flag, data }) {
         </div>
       </div>
 
-      {/* 대표 뉴스 TOP 3 — 클릭 시 원문 이동 */}
       <div>
         <p className="section-label mb-2">대표 뉴스 TOP 3</p>
         <ul className="space-y-2">
@@ -108,7 +97,6 @@ function CountryCard({ countryCode, countryName, flag, data }) {
         </ul>
       </div>
 
-      {/* 국가 배경 링크 */}
       <button
         onClick={() => navigate(`/country/${countryCode}`)}
         className="text-xs text-accent font-body hover:underline self-start mt-auto"

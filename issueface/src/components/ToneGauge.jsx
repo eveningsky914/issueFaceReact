@@ -1,19 +1,14 @@
 import React from 'react';
 
 function ToneGauge({ tone, label }) {
-  // tone: -5 ~ +5
   const pct = ((tone + 5) / 10) * 100;
-  const color = tone < -1 ? '#c1440e' : tone > 1 ? '#1a6b3c' : '#8a8070';
-  const sentiment =
-    tone <= -3 ? '매우 부정적' :
-    tone <= -1 ? '부정적' :
-    tone < 1  ? '중립적' :
-    tone < 3  ? '긍정적' : '매우 긍정적';
+  const color = tone <= -0.5 ? '#c1440e' : tone >= 0.5 ? '#1a6b3c' : '#8a8070';
+  const sentiment = tone <= -0.5 ? '부정적' : tone >= 0.5 ? '긍정적' : '중립적';
 
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-xs font-mono">
-        <span className="text-muted">–5</span>
+        <span className="text-muted">-5</span>
         <span className="font-bold text-ink">{label}</span>
         <span className="text-muted">+5</span>
       </div>

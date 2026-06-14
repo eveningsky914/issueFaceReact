@@ -1,10 +1,26 @@
 import React from 'react';
 
 const steps = [
-  { num: '01', title: '국가 선택', desc: '세계 지도에서 비교하고 싶은 두 국가를 클릭하거나, 오른쪽 패널의 드롭다운에서 직접 선택하세요.' },
-  { num: '02', title: '이슈 선택', desc: 'AI, 전쟁, 경제, 환경, 반도체 등 분석하고 싶은 주제를 선택하거나 직접 입력하세요.' },
-  { num: '03', title: '뉴스 분석', desc: '"뉴스 분석 시작" 버튼을 클릭하면 양국의 뉴스 감정 지수를 비교 분석합니다.' },
-  { num: '04', title: '결과 확인', desc: 'Tone 점수, 연관어, 대표 뉴스, 감정 캐릭터 등 다양한 지표로 두 나라의 시각을 비교할 수 있어요.' },
+  {
+    num: '01',
+    title: '국가 선택',
+    desc: '세계 지도에서 비교하고 싶은 두 국가를 클릭하거나, 오른쪽 패널의 드롭다운에서 직접 선택하세요.',
+  },
+  {
+    num: '02',
+    title: '이슈 선택',
+    desc: '분석하고 싶은 주제를 선택하거나 직접 입력하세요.',
+  },
+  {
+    num: '03',
+    title: '뉴스 분석',
+    desc: '"뉴스 분석 시작" 버튼을 클릭하면 양국의 뉴스 감정 지수와 보도 표현을 비교 분석합니다.',
+  },
+  {
+    num: '04',
+    title: '결과 확인',
+    desc: 'Tone 점수, 핵심 보도 표현, 대표 뉴스, 분석 신뢰도 등을 통해 두 나라의 보도 시각을 비교할 수 있습니다.',
+  },
 ];
 
 function UsageModal({ onClose }) {
@@ -34,7 +50,7 @@ function UsageModal({ onClose }) {
         </div>
         <div className="px-6 pb-5">
           <p className="text-xs text-muted font-body bg-parchment border border-border rounded-sm px-3 py-2">
-            ⚠️ 본 서비스의 데이터는 국민 여론조사가 아닌 언론 보도 데이터 기반입니다. 실제 국민 여론과 다를 수 있습니다.
+            주의: 본 서비스의 데이터는 국민 여론조사가 아닌 언론 보도 데이터 기반입니다. 실제 국민 여론과 다를 수 있습니다.
           </p>
         </div>
       </div>

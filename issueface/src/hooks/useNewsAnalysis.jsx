@@ -253,11 +253,9 @@ function buildComparisonFrameSummary(c1Name, c2Name, phrases1, phrases2, has1, h
 }
 
 function getSentimentLabel(tone) {
-  if (tone <= -3) return '매우 부정적';
-  if (tone <= -1) return '부정적';
-  if (tone < 1)  return '중립적';
-  if (tone < 3)  return '긍정적';
-  return '매우 긍정적';
+  if (tone <= -0.5) return '\uBD80\uC815\uC801';
+  if (tone >= 0.5) return '\uAE0D\uC815\uC801';
+  return '\uC911\uB9BD\uC801';
 }
 
 function buildSummary(countryName, topic, tone, count) {

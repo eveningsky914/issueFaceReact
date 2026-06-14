@@ -2,10 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CountryCard from '../components/CountryCard';
-import PerspectiveCompareCard from '../components/PerspectiveCompareCard';
+import CharacterInteractionCard from '../components/CharacterInteractionCard';
 import CompareStats from '../components/CompareStats';
 import useCountries from '../hooks/useCountries';
 import useNewsAnalysis from '../hooks/useNewsAnalysis';
+import { addHistory, makeCountryPairKey } from '../utils/historyStorage';
 
 function Analysis() {
   const [params] = useSearchParams();
@@ -13,6 +14,7 @@ function Analysis() {
   const { countries } = useCountries();
   const { analyze, result, loading, error } = useNewsAnalysis();
   const called = useRef(false);
+  const savedHistoryId = useRef(null);
 
   const country1Code = params.get('country1');
   const country2Code = params.get('country2');
@@ -43,17 +45,40 @@ function Analysis() {
   const c2 = getCountry(country2Code);
   const c1Name = c1?.translations?.kor?.common || c1?.name?.common || country1Code;
   const c2Name = c2?.translations?.kor?.common || c2?.name?.common || country2Code;
-  const both = result?.country1?.hasData && result?.country2?.hasData;
+
+  useEffect(() => {
+    if (!result || loading) return;
+
+    const countryPairKey = makeCountryPairKey(result.country1Code, result.country2Code);
+    const id = `${countryPairKey}-${result.topic}`;
+    if (savedHistoryId.current === id) return;
+    savedHistoryId.current = id;
+
+    addHistory({
+      id,
+      countryPairKey,
+      country1: result.country1Code,
+      country2: result.country2Code,
+      country1Name: result.country1Name,
+      country2Name: result.country2Name,
+      topic: result.topic,
+      tone1: result.country1?.hasData ? result.country1.tone : null,
+      tone2: result.country2?.hasData ? result.country2.tone : null,
+      summary: result.comparison,
+      savedAt: new Date().toISOString(),
+    });
+  }, [result, loading]);
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       <Header />
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
-
-        {/* 상단 */}
         <div className="flex items-start justify-between mb-8">
           <div>
-            <button onClick={() => navigate('/')} className="text-sm font-body text-muted hover:text-ink mb-3 flex items-center gap-1.5 transition-colors">
+            <button
+              onClick={() => navigate('/')}
+              className="text-sm font-body text-muted hover:text-ink mb-3 flex items-center gap-1.5 transition-colors"
+            >
               ← 다시 선택하기
             </button>
             <h1 className="font-display text-3xl font-bold text-ink">{topic}</h1>
@@ -67,7 +92,6 @@ function Analysis() {
           </div>
         </div>
 
-        {/* 로딩 */}
         {loading && (
           <div className="flex flex-col items-center justify-center py-24 gap-4 animate-fade-in">
             <div className="w-12 h-12 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -76,7 +100,6 @@ function Analysis() {
           </div>
         )}
 
-        {/* 오류 */}
         {error && !loading && (
           <div className="card p-6 text-center animate-fade-in">
             <p className="text-accent font-body font-semibold mb-2">분석 중 오류가 발생했습니다</p>
@@ -85,11 +108,8 @@ function Analysis() {
           </div>
         )}
 
-        {/* 결과 */}
         {result && !loading && (
           <div className="animate-fade-in space-y-6">
-
-            {/* 비교 요약 */}
             <div className="card p-5 border-l-4 border-accent">
               <p className="section-label mb-2">분석 요약</p>
               <p className="font-body text-sm text-ink leading-relaxed">{result.comparison}</p>
@@ -100,32 +120,13 @@ function Analysis() {
               )}
             </div>
 
-            {/* 뉴스 카드 + Tone 차트 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <CharacterInteractionCard />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {result.country1.hasData
                 ? <CountryCard countryCode={country1Code} countryName={c1Name} flag={c1?.flag} data={result.country1} />
                 : <NoDataCard flag={c1?.flag} name={c1Name} />
               }
-
-              <div className="md:col-span-1 flex flex-col gap-4">
-                {both ? (
-                  <>
-                    <PerspectiveCompareCard
-                      country1Name={c1Name}
-                      country2Name={c2Name}
-                      country1Data={result.country1}
-                      country2Data={result.country2}
-                    />
-                    <div className="card p-4 flex flex-col flex-1 min-h-[180px]">
-                      <p className="section-label">캐릭터 상호작용</p>
-                    </div>
-                  </>
-                ) : (
-                  <div className="card p-4 flex items-center justify-center text-xs text-muted font-body text-center min-h-[120px]">
-                    두 나라 모두 뉴스가 있어야<br />비교 차트가 표시됩니다.
-                  </div>
-                )}
-              </div>
 
               {result.country2.hasData
                 ? <CountryCard countryCode={country2Code} countryName={c2Name} flag={c2?.flag} data={result.country2} />
@@ -133,7 +134,6 @@ function Analysis() {
               }
             </div>
 
-            {/* 상세 비교 지표 */}
             <div>
               <h2 className="font-display text-xl font-bold text-ink mb-4">상세 비교 지표</h2>
               <CompareStats
@@ -144,7 +144,6 @@ function Analysis() {
                 c2Code={country2Code}
               />
             </div>
-
           </div>
         )}
       </main>
