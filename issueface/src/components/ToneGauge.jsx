@@ -8,7 +8,6 @@ function ToneGauge({ tone, showValue = true }) {
     <div className="space-y-2">
       <div className="flex justify-between text-xs font-body font-bold">
         <span className="text-accent">부정적</span>
-        <span className="text-muted">중립적</span>
         <span className="text-green-700">긍정적</span>
       </div>
       <div className="relative h-3 bg-parchment border border-border rounded-full overflow-hidden">
@@ -21,11 +20,13 @@ function ToneGauge({ tone, showValue = true }) {
           style={{ left: `calc(${pct}% - 6px)` }}
         />
       </div>
-      <div className={`flex items-center ${showValue ? 'justify-between' : 'justify-end'}`}>
-        {showValue && (
-          <span className="font-mono font-bold text-lg" style={{ color }}>{tone > 0 ? '+' : ''}{tone.toFixed(2)}</span>
-        )}
-      </div>
+      {showValue && (
+        <div className="flex items-center justify-between">
+          <span className="font-mono font-bold text-lg" style={{ color }}>
+            {tone > 0 ? '+' : ''}{tone.toFixed(2)}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

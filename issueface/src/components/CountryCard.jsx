@@ -54,8 +54,8 @@ function CountryCard({ countryCode, countryName, data }) {
 
   return (
     <div className="card p-5 flex flex-col gap-4 animate-slide-up overflow-hidden">
-      <div className="flex items-start gap-5">
-        <div className="flex-1 min-w-0 pt-1">
+      <div className="relative min-h-[320px]">
+        <div className="relative z-10 max-w-[45%] pt-1">
           <div className="flex items-start gap-3">
             {flagImage && (
               <img
@@ -79,18 +79,18 @@ function CountryCard({ countryCode, countryName, data }) {
           <p className={`mt-3 font-mono text-4xl font-bold leading-none ${moodClasses.number}`}>
             {formattedTone}
           </p>
-
-          <div className="mt-5">
-            <ToneGauge tone={data.tone} showValue={false} />
-          </div>
         </div>
 
-        <div className="w-36 sm:w-44 shrink-0 bg-parchment border border-border rounded-sm overflow-hidden">
+        <div className="absolute top-0 left-[56%] z-0 h-64 w-56 -translate-x-1/2 rounded-sm border border-border bg-parchment overflow-hidden">
           <img
             src={characterImage}
             alt={`${countryName} 캐릭터`}
-            className="w-full h-52 object-contain object-top"
+            className="h-full w-full object-contain object-top"
           />
+        </div>
+
+        <div className="absolute top-[272px] left-4 right-4">
+          <ToneGauge tone={data.tone} showValue={false} />
         </div>
       </div>
 
