@@ -2,10 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CountryCard from '../components/CountryCard';
-import CharacterInteractionCard from '../components/CharacterInteractionCard';
 import CompareStats from '../components/CompareStats';
+import ResultHero from '../components/result/ResultHero';
 import useCountries from '../hooks/useCountries';
 import useNewsAnalysis from '../hooks/useNewsAnalysis';
+import { buildAnalysisHeroData } from '../utils/analysisHero';
 import { addHistory, makeCountryPairKey } from '../utils/historyStorage';
 
 function Analysis() {
@@ -45,6 +46,7 @@ function Analysis() {
   const c2 = getCountry(country2Code);
   const c1Name = c1?.translations?.kor?.common || c1?.name?.common || country1Code;
   const c2Name = c2?.translations?.kor?.common || c2?.name?.common || country2Code;
+  const heroData = result ? buildAnalysisHeroData(result) : null;
 
   useEffect(() => {
     if (!result || loading) return;
@@ -110,17 +112,7 @@ function Analysis() {
 
         {result && !loading && (
           <div className="animate-fade-in space-y-6">
-            <div className="card p-5 border-l-4 border-accent">
-              <p className="section-label mb-2">분석 요약</p>
-              <p className="font-body text-sm text-ink leading-relaxed">{result.comparison}</p>
-              {result.comparisonFrameSummary && (
-                <p className="font-body text-sm text-muted leading-relaxed mt-2">
-                  {result.comparisonFrameSummary}
-                </p>
-              )}
-            </div>
-
-            <CharacterInteractionCard />
+            <ResultHero heroData={heroData} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {result.country1.hasData

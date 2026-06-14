@@ -253,8 +253,8 @@ function buildComparisonFrameSummary(c1Name, c2Name, phrases1, phrases2, has1, h
 }
 
 function getSentimentLabel(tone) {
-  if (tone <= -0.5) return '\uBD80\uC815\uC801';
-  if (tone >= 0.5) return '\uAE0D\uC815\uC801';
+  if (tone <= -0.3) return '\uBD80\uC815\uC801';
+  if (tone >= 0.3) return '\uAE0D\uC815\uC801';
   return '\uC911\uB9BD\uC801';
 }
 
@@ -376,6 +376,7 @@ function useNewsAnalysis() {
         country1Name,
         country2Name,
         topic,
+        analyzedAt: new Date().toISOString(),
       });
     } catch (err) {
       console.error('분석 오류:', err);

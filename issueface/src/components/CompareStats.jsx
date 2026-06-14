@@ -123,8 +123,8 @@ function AnalysisReliability({ c1Name, c2Name, c1Code, c2Code, count1, count2 })
 // ── Tone 분포 차트 ───────────────────────────────────────────────
 function ToneDistribution({ c1Name, c2Name, articles1, articles2 }) {
   function classify(articles) {
-    const pos = articles.filter((a) => a.toneScore >= 0.5).length;
-    const neg = articles.filter((a) => a.toneScore <= -0.5).length;
+    const pos = articles.filter((a) => a.toneScore >= 0.3).length;
+    const neg = articles.filter((a) => a.toneScore <= -0.3).length;
     const neu = articles.length - pos - neg;
     const total = articles.length;
 

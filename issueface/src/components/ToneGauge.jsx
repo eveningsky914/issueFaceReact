@@ -2,7 +2,7 @@ import React from 'react';
 
 function ToneGauge({ tone, showValue = true }) {
   const pct = ((tone + 5) / 10) * 100;
-  const color = tone <= -0.5 ? '#c1440e' : tone >= 0.5 ? '#1a6b3c' : '#8a8070';
+  const color = tone <= -0.3 ? '#c1440e' : tone >= 0.3 ? '#1a6b3c' : '#8a8070';
 
   return (
     <div className="space-y-2">
