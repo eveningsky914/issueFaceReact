@@ -6,9 +6,10 @@ function ToneGauge({ tone, showValue = true }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between text-xs font-body font-bold">
+      <div className="grid grid-cols-3 text-xs font-body font-bold">
         <span className="text-accent">부정적</span>
-        <span className="text-green-700">긍정적</span>
+        <span className="text-center text-muted">중립적</span>
+        <span className="text-right text-green-700">긍정적</span>
       </div>
       <div className="relative h-3 bg-parchment border border-border rounded-full overflow-hidden">
         <div

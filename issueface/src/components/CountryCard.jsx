@@ -54,8 +54,8 @@ function CountryCard({ countryCode, countryName, data }) {
 
   return (
     <div className="card p-5 flex flex-col gap-4 animate-slide-up overflow-hidden">
-      <div className="relative min-h-[320px]">
-        <div className="relative z-10 max-w-[45%] pt-1">
+      <div className="relative min-h-[370px] overflow-hidden rounded-lg border border-border bg-cream/30">
+        <div className="relative z-10 max-w-[45%] pt-7 pl-7">
           <div className="flex items-start gap-3">
             {flagImage && (
               <img
@@ -81,20 +81,20 @@ function CountryCard({ countryCode, countryName, data }) {
           </p>
         </div>
 
-        <div className="absolute top-0 left-[56%] z-0 h-64 w-56 -translate-x-1/2 rounded-sm border border-border bg-parchment overflow-hidden">
+        <div className="absolute bottom-[70px] left-[62%] z-0 flex h-[286px] w-[250px] -translate-x-1/2 items-end justify-center overflow-hidden">
           <img
             src={characterImage}
             alt={`${countryName} 캐릭터`}
-            className="h-full w-full object-contain object-top"
+            className="block h-full w-auto max-w-none origin-bottom scale-[0.96] object-contain"
           />
         </div>
 
-        <div className="absolute top-[272px] left-4 right-4">
+        <div className="absolute bottom-0 left-0 right-0 rounded-t-lg border-t border-border bg-cream/70 px-8 py-4">
           <ToneGauge tone={data.tone} showValue={false} />
         </div>
       </div>
 
-      <div className="border-t border-border pt-4">
+      <div className="pt-2">
         <p className="section-label mb-2">{hasKeyPhrases ? '핵심 보도 표현' : '핵심어'}</p>
         {data.frameSummary && (
           <p className="text-xs font-body text-muted leading-relaxed mb-2">
