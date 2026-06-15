@@ -76,14 +76,14 @@ function buildToneDifferenceSummary(country1, country2, diff) {
   const absText = Math.abs(diff).toFixed(2);
 
   if (Math.abs(diff) < 0.01) {
-    return '두 국가의 감정 반응은 큰 차이가 없습니다.';
+    return '두 국가 언론의 감정 반응은 큰 차이가 없습니다.';
   }
 
   if (diff > 0) {
-    return `${country1.name} 관련 뉴스가 ${country2.name}보다 ${absText}점 더 긍정적인 반응을 보입니다.`;
+    return `${country1.name} 언론이 ${country2.name} 언론보다 ${absText}점 더 긍정적인 반응을 보입니다.`;
   }
 
-  return `${country2.name} 관련 뉴스가 ${country1.name}보다 ${absText}점 더 긍정적인 반응을 보입니다.`;
+  return `${country2.name} 언론이 ${country1.name} 언론보다 ${absText}점 더 긍정적인 반응을 보입니다.`;
 }
 
 function buildHeroSummary(country1, country2) {
@@ -92,14 +92,14 @@ function buildHeroSummary(country1, country2) {
   }
 
   if (!country1.hasData) {
-    return `${country2.name} 관련 뉴스만 분석되었습니다.`;
+    return `${country2.name} 언론만 분석되었습니다.`;
   }
 
   if (!country2.hasData) {
-    return `${country1.name} 관련 뉴스만 분석되었습니다.`;
+    return `${country1.name} 언론만 분석되었습니다.`;
   }
 
-  return `${country1.name}은 ${country1.toneLabel}인 반응을 보이고 있으며, ${country2.name}은 ${country2.toneLabel}인 반응을 보이고 있습니다.`;
+  return `${country1.name}은 ${country1.toneLabel} 반응을 보이고 있으며, ${country2.name}은 ${country2.toneLabel} 반응을 보이고 있습니다.`;
 }
 
 export function buildAnalysisHeroData(result, analyzedAt) {

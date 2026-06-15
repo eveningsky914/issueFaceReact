@@ -5,8 +5,8 @@ import WorldMap from '../components/WorldMap';
 import useCountries from '../hooks/useCountries';
 
 const TOPICS = [
-  '가자 이스라엘-팔레스타인',
-  '대만-중국 안보',
+  '이스라엘-팔레스타인',
+  '대만-중국 분쟁',
   '이민/난민 문제',
   '안락사',
   '아마존 개발',

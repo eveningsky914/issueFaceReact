@@ -101,7 +101,7 @@ function CountryCard({ countryCode, countryName, data }) {
             {data.frameSummary}
           </p>
         )}
-        <div className="flex flex-wrap gap-1.5"> 
+        <div className="flex flex-wrap gap-1.5">
           {hasKeyPhrases
             ? keyPhrases.map((phrase) => (
               <span

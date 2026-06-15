@@ -1,16 +1,17 @@
-# IssueFace 🌍
+# IssueFace
 
-뉴스 데이터를 기반으로 특정 이슈의 국가별 감정지수를 비교 분석하는 서비스.
+IssueFace는 같은 이슈를 두 국가의 뉴스가 어떤 논조와 표현으로 다루는지 비교하는 React 프로젝트입니다.
 
 ## 기술 스택
 
-- **Frontend**: React 18, React Router v6, Tailwind CSS
-- **지도**: react-simple-maps
-- **차트**: Recharts
-- **뉴스 데이터**: GDELT Project API (무료, CORS 허용)
-- **AI 분석**: Anthropic Claude API
+- Frontend: React 18, React Router, Tailwind CSS
+- Map: react-simple-maps
+- Charts: Recharts
+- Backend: Express
+- News: Currents News API
+- Sentiment: Google Natural Language API
 
-## 시작하기
+## 실행 방법
 
 ### 1. 의존성 설치
 
@@ -20,86 +21,62 @@ npm install
 
 ### 2. 환경 변수 설정
 
-`.env.example`을 복사해서 `.env` 파일 생성:
+`.env.example`을 복사해 `.env`를 만들고 값을 채웁니다.
 
 ```bash
 cp .env.example .env
 ```
 
-`.env` 파일에 Anthropic API 키 입력:
+필수 값:
 
+```env
+PORT=4000
+CURRENTS_API_KEY=
+GOOGLE_NL_API_KEY=
+REACT_APP_API_BASE_URL=http://localhost:4000
 ```
-REACT_APP_ANTHROPIC_API_KEY=sk-ant-...
+
+API key는 서버에서만 사용합니다. 프론트 코드에 직접 넣지 마세요.
+
+### 3. 백엔드 실행
+
+```bash
+npm run server
 ```
 
-> API 키는 https://console.anthropic.com 에서 발급받으세요.
-
-### 3. 개발 서버 실행
+### 4. 프론트 실행
 
 ```bash
 npm start
 ```
 
-## 배포
+## 주요 구조
 
-### GitHub Pages
+```txt
+server/index.js                       # /api/analyze, Currents/Google NL 분석
+src/services/newsAnalysisApi.js        # 프론트의 분석 API 호출
+src/hooks/useNewsAnalysis.jsx          # API 응답을 UI 데이터로 변환
+src/pages/Home.jsx                     # 지도/국가/주제 선택
+src/pages/Analysis.jsx                 # 결과 화면
+src/components/result/ResultHero.jsx   # 상단 브리핑 Hero
+src/components/CountryCard.jsx         # 국가별 분석 카드
+src/components/CompareStats.jsx        # Tone 분포/신뢰도/종합 지표
+src/utils/analysisHero.js              # Hero 데이터 생성
+src/utils/characterImages.js           # 국가별 캐릭터 이미지 매핑
+src/utils/interactionImages.js         # 국가 간 상호작용 이미지 매핑
+```
+
+## 상호작용 이미지 관리
+
+국가쌍 이미지를 추가하거나 교체한 뒤에는 아래 명령으로 import map을 다시 생성합니다.
 
 ```bash
-npm install --save-dev gh-pages
+npm run generate:interaction-map
+npm run check:interactions
 ```
 
-`package.json`에 추가:
-```json
-{
-  "homepage": "https://<username>.github.io/<repo-name>",
-  "scripts": {
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
-  }
-}
-```
+## 빌드
 
 ```bash
-npm run deploy
+npm run build
 ```
-
-### Netlify (권장)
-
-1. GitHub에 push
-2. https://netlify.com 에서 "Import from Git" 선택
-3. Build command: `npm run build`, Publish directory: `build`
-4. Environment variables에 `REACT_APP_ANTHROPIC_API_KEY` 추가
-
-### AWS Amplify
-
-1. AWS Console → Amplify → New App → GitHub 연결
-2. Build settings 자동 감지
-3. Environment variables에 API 키 추가
-
-## 프로젝트 구조
-
-```
-src/
-├── components/
-│   ├── Header.js          # 헤더 (소개, 사용법)
-│   ├── UsageModal.js      # 사용법 모달
-│   ├── WorldMap.js        # 인터랙티브 세계 지도
-│   ├── CountrySelector.js # 국가 검색/선택 드롭다운
-│   ├── CountryCard.js     # 분석 결과 카드
-│   ├── ToneGauge.js       # Tone 점수 게이지
-│   └── ToneCompareChart.js # 비교 바 차트
-├── pages/
-│   ├── Home.js            # 메인 (지도 + 선택 패널)
-│   ├── Introduction.js    # 소개 페이지
-│   ├── Analysis.js        # 분석 결과 페이지
-│   └── CountryBackground.js # 국가 배경 설명
-├── hooks/
-│   ├── useCountries.js    # 국가 목록 (restcountries API)
-│   └── useNewsAnalysis.js # GDELT + Claude 분석
-└── App.js                 # 라우터
-```
-
-## 주의사항
-
-- `REACT_APP_ANTHROPIC_API_KEY`는 브라우저에 노출됩니다. 프로덕션에서는 Node.js 백엔드 프록시 서버를 통해 키를 숨기는 것을 권장합니다.
-- GDELT API는 영어 뉴스 기반입니다.

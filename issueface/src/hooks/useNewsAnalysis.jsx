@@ -80,7 +80,7 @@ function getSentimentLabel(tone) {
 function cleanPhrase(phrase) {
   return phrase
     .replace(/<[^>]*>/g, ' ')
-    .replace(/[“”"()[\]{}]/g, '')
+    .replace(/["'“”‘’()[\]{}]/g, '')
     .replace(/[,:;.!?]+$/g, '')
     .replace(/\s+/g, ' ')
     .trim()
@@ -90,7 +90,11 @@ function cleanPhrase(phrase) {
 }
 
 function normalizePhrase(phrase) {
-  return phrase.toLowerCase().replace(/[^a-z0-9가-힣\s]/g, '').replace(/\s+/g, ' ').trim();
+  return phrase
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function extractKeyPhrases(articles, topN = 5) {
@@ -153,7 +157,7 @@ function buildComparisonFrameSummary(c1Name, c2Name, phrases1, phrases2, has1, h
 function buildSummary(countryName, topic, tone, count) {
   if (count === 0) return null;
   const label = getSentimentLabel(tone);
-  return `${countryName} 관련 "${topic}" 뉴스 ${count}건 분석 결과, ${label}인 논조(Tone ${tone >= 0 ? '+' : ''}${tone})를 보입니다.`;
+  return `${countryName} 관련 "${topic}" 뉴스 ${count}건 분석 결과, ${label} 논조(Tone ${tone >= 0 ? '+' : ''}${tone})를 보입니다.`;
 }
 
 function buildComparison(c1, c2, t1, t2, topic, has1, has2) {
