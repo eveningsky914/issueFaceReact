@@ -19,7 +19,9 @@ function Analysis() {
 
   const country1Code = params.get('country1');
   const country2Code = params.get('country2');
-  const topic = params.get('topic') || '';
+  const keyword = params.get('keyword') || params.get('topic') || '';
+  const topicId = params.get('topicId') || '';
+  const topic = keyword;
 
   const getCountry = (cca2) => countries.find((c) => c.cca2 === cca2);
 
@@ -39,6 +41,7 @@ function Analysis() {
       country1NameEn: c1?.name?.common || country1Code,
       country2NameEn: c2?.name?.common || country2Code,
       topic,
+      topicId,
     });
   }, [countries]);
 
@@ -98,7 +101,7 @@ function Analysis() {
           <div className="flex flex-col items-center justify-center py-24 gap-4 animate-fade-in">
             <div className="w-12 h-12 border-2 border-accent border-t-transparent rounded-full animate-spin" />
             <p className="font-body text-muted text-sm">뉴스를 분석하는 중...</p>
-            <p className="font-mono text-xs text-border">Google News RSS 수집 중</p>
+            <p className="font-mono text-xs text-border">Currents News / Google Natural Language 분석 중</p>
           </div>
         )}
 
