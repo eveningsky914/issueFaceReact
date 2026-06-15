@@ -13,7 +13,11 @@ function ResultHero({ heroData }) {
   const interactionImage = heroData.showInteraction
     ? getInteractionImage(heroData.normalizedPairKey, heroData.interactionType)
     : null;
-  const hasInteractionImage = Boolean(heroData.showInteraction && interactionImage);
+  const hasInteractionImage = Boolean(
+    heroData.showInteraction &&
+    heroData.interactionType &&
+    interactionImage
+  );
   const diffSummary = heroData.toneDifference?.summary || '';
 
   return (
