@@ -7,12 +7,29 @@ export function getToneState(tone) {
   return 'neutral';
 }
 
+function getSummaryToneState(tone) {
+  const value = Number(tone);
+
+  if (!Number.isFinite(value)) return 'neutral';
+  if (value >= 0.5) return 'positive';
+  if (value <= -0.5) return 'negative';
+  return 'neutral';
+}
+
 export function getToneStateLabel(tone) {
   const state = getToneState(tone);
 
   if (state === 'positive') return '긍정적';
   if (state === 'negative') return '부정적';
-  return '중립적';
+  return '중립';
+}
+
+function getSummaryToneLabel(tone) {
+  const state = getSummaryToneState(tone);
+
+  if (state === 'positive') return '긍정적';
+  if (state === 'negative') return '부정적';
+  return '중립';
 }
 
 export function formatToneValue(tone) {
@@ -54,6 +71,8 @@ function buildCountryHeroData({ code, name, data }) {
     toneText: formatToneValue(tone),
     toneState: getToneState(tone),
     toneLabel: getToneStateLabel(tone),
+    summaryToneState: getSummaryToneState(tone),
+    summaryToneLabel: getSummaryToneLabel(tone),
   };
 }
 
@@ -99,7 +118,29 @@ function buildHeroSummary(country1, country2) {
     return `${country1.name} 언론만 분석되었습니다.`;
   }
 
-  return `${country1.name}은 ${country1.toneLabel} 반응을 보이고 있으며, ${country2.name}은 ${country2.toneLabel} 반응을 보이고 있습니다.`;
+  const state1 = country1.summaryToneState;
+  const state2 = country2.summaryToneState;
+
+  if (state1 === 'positive' && state2 === 'positive') {
+    return '두 국가는 모두 긍정적인 반응을 보이고 있습니다.';
+  }
+
+  if (state1 === 'negative' && state2 === 'negative') {
+    return '두 국가는 모두 부정적인 반응을 보이고 있습니다.';
+  }
+
+  if (
+    (state1 === 'positive' && state2 === 'negative') ||
+    (state1 === 'negative' && state2 === 'positive')
+  ) {
+    return '두 국가는 서로 상반된 반응을 보이고 있습니다.';
+  }
+
+  if (state1 === 'neutral' && state2 === 'neutral') {
+    return '두 국가는 모두 중립적인 반응을 보이고 있습니다.';
+  }
+
+  return `${country1.name}은 ${country1.summaryToneLabel} 반응을 보이고 있으며, ${country2.name}은 ${country2.summaryToneLabel} 반응을 보이고 있습니다.`;
 }
 
 export function buildAnalysisHeroData(result, analyzedAt) {
@@ -126,6 +167,7 @@ export function buildAnalysisHeroData(result, analyzedAt) {
     topic: result.topic || '',
     analyzedAt: resolvedAnalyzedAt,
     analyzedAtText: formatHeroDate(resolvedAnalyzedAt),
+    periodText: '최근 1개월',
     countries: {
       country1,
       country2,

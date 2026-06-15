@@ -23,7 +23,7 @@ function Analysis() {
   const topicId = params.get('topicId') || '';
   const topic = keyword;
 
-  const getCountry = (cca2) => countries.find((c) => c.cca2 === cca2);
+  const getCountry = (cca2) => countries.find((country) => country.cca2 === cca2);
 
   useEffect(() => {
     if (called.current || !country1Code || !country2Code || !topic) return;
@@ -78,24 +78,12 @@ function Analysis() {
     <div className="min-h-screen bg-cream flex flex-col">
       <Header />
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
-        <div className="flex items-start justify-between mb-8">
-          <div>
-            <button
-              onClick={() => navigate('/')}
-              className="text-sm font-body text-muted hover:text-ink mb-3 flex items-center gap-1.5 transition-colors"
-            >
-              ← 다시 선택하기
-            </button>
-            <h1 className="font-display text-3xl font-bold text-ink">{topic}</h1>
-            <p className="font-body text-muted mt-1 text-sm">
-              {c1Name} <span className="font-mono text-border">vs</span> {c2Name} 뉴스 비교
-            </p>
-          </div>
-          <div className="text-right">
-            <span className="section-label">분석 기간</span>
-            <p className="font-mono text-sm text-ink mt-0.5">최근 1개월</p>
-          </div>
-        </div>
+        <button
+          onClick={() => navigate('/')}
+          className="text-sm font-body text-muted hover:text-ink mb-5 flex items-center gap-1.5 transition-colors"
+        >
+          ← 다시 선택하기
+        </button>
 
         {loading && (
           <div className="flex flex-col items-center justify-center py-24 gap-4 animate-fade-in">
@@ -152,7 +140,7 @@ function NoDataCard({ flag, name }) {
       <span className="text-4xl">{flag}</span>
       <p className="font-display font-bold text-ink">{name}</p>
       <p className="text-xs text-muted font-body leading-relaxed">
-        관련 뉴스를 찾을 수 없습니다.<br />다른 주제어로 검색해보세요.
+        관련 뉴스를 찾을 수 없습니다.<br />다른 주제로 검색해보세요.
       </p>
     </div>
   );
