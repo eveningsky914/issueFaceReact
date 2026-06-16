@@ -26,114 +26,76 @@ const COUNTRIES = {
 };
 
 const PRESET_TOPICS = {
-  "gaza_israel_palestine": {
-    "label": "가자 이스라엘-팔레스타인",
-    "aliases": [
-      "가자 이스라엘-팔레스타인",
-      "Gaza Israel Palestine"
-    ],
-    "shortKeyword": "Gaza",
-    "queries": {
-      "ko": "가자 이스라엘 팔레스타인",
-      "en": "Gaza Israel Palestine",
-      "pt": "Gaza Israel Palestina",
-      "ja": "ガザ イスラエル パレスチナ",
-      "zh": "加沙 以色列 巴勒斯坦",
-      "id": "Gaza Israel Palestina",
-      "ar": "غزة إسرائيل فلسطين"
-    }
+  gaza_israel_palestine: {
+    label: '이스라엘-팔레스타인',
+    aliases: ['이스라엘-팔레스타인', '가자 이스라엘-팔레스타인', 'Gaza Israel Palestine'],
+    shortKeyword: 'Gaza',
+    queries: {
+      ko: '가자 이스라엘 팔레스타인',
+      en: 'Gaza Israel Palestine',
+      pt: 'Gaza Israel Palestina',
+      ja: 'ガザ イスラエル パレスチナ',
+      zh: '加沙 以色列 巴勒斯坦',
+      id: 'Gaza Israel Palestina',
+      ar: 'غزة إسرائيل فلسطين',
+    },
   },
-  "taiwan_strait_tensions": {
-    "label": "대만-중국 안보",
-    "aliases": [
-      "대만-중국 안보",
-      "대만-중국 갈등",
-      "대만-중국 안보 Taiwan Strait tensions",
-      "Taiwan Strait tensions"
-    ],
-    "shortKeyword": "Taiwan",
-    "queries": {
-      "ko": "대만 중국 안보 갈등",
-      "en": "Taiwan Strait tensions",
-      "pt": "tensões Estreito de Taiwan China",
-      "ja": "台湾海峡 中国 安全保障",
-      "zh": "台湾海峡 中国 安全",
-      "id": "ketegangan Selat Taiwan China",
-      "ar": "توترات مضيق تايوان الصين"
-    }
+  taiwan_strait_tensions: {
+    label: '대만-중국 분쟁',
+    aliases: ['대만-중국 분쟁', '대만-중국 안보', '대만-중국 갈등', 'Taiwan Strait tensions'],
+    shortKeyword: 'Taiwan',
+    queries: {
+      ko: '대만 중국 분쟁',
+      en: 'Taiwan Strait tensions',
+      pt: 'tensões Estreito de Taiwan China',
+      ja: '台湾海峡 中国 緊張',
+      zh: '台湾海峡 中国 紧张',
+      id: 'ketegangan Selat Taiwan China',
+      ar: 'توترات مضيق تايوان الصين',
+    },
   },
-  "immigration_refugees": {
-    "label": "이민/난민 문제",
-    "aliases": [
-      "이민/난민 문제",
-      "이민·난민",
-      "immigration refugees"
-    ],
-    "shortKeyword": "refugees",
-    "queries": {
-      "ko": "이민 난민 문제",
-      "en": "immigration refugees",
-      "pt": "imigração refugiados",
-      "ja": "移民 難民 問題",
-      "zh": "移民 难民 问题",
-      "id": "imigrasi pengungsi",
-      "ar": "الهجرة اللاجئون"
-    }
+  immigration_refugees: {
+    label: '이민/난민 문제',
+    aliases: ['이민/난민 문제', '이민·난민', 'immigration refugees'],
+    shortKeyword: 'refugees',
+    queries: {
+      ko: '이민 난민 문제',
+      en: 'immigration refugees',
+      pt: 'imigração refugiados',
+      ja: '移民 難民 問題',
+      zh: '移民 难民 问题',
+      id: 'imigrasi pengungsi',
+      ar: 'الهجرة اللاجئون',
+    },
   },
-  "euthanasia": {
-    "label": "안락사",
-    "aliases": [
-      "안락사",
-      "euthanasia"
-    ],
-    "shortKeyword": "euthanasia",
-    "queries": {
-      "ko": "안락사",
-      "en": "euthanasia",
-      "pt": "eutanásia",
-      "ja": "安楽死",
-      "zh": "安乐死",
-      "id": "eutanasia",
-      "ar": "القتل الرحيم"
-    }
+  euthanasia: {
+    label: '안락사',
+    aliases: ['안락사', 'euthanasia'],
+    shortKeyword: 'euthanasia',
+    queries: {
+      ko: '안락사',
+      en: 'euthanasia',
+      pt: 'eutanásia',
+      ja: '安楽死',
+      zh: '安乐死',
+      id: 'eutanasia',
+      ar: 'القتل الرحيم',
+    },
   },
-  "amazon_development": {
-    "label": "아마존 개발",
-    "aliases": [
-      "아마존 개발",
-      "아마존 환경",
-      "Amazon rainforest deforestation soy",
-      "Amazon development"
-    ],
-    "shortKeyword": "Amazon",
-    "queries": {
-      "ko": "아마존 개발 아마존 열대우림 벌채",
-      "en": "Amazon rainforest deforestation",
-      "pt": "Amazônia desmatamento floresta amazônica",
-      "ja": "アマゾン 開発 森林破壊",
-      "zh": "亚马逊 雨林 砍伐 开发",
-      "id": "Amazon deforestasi hutan hujan",
-      "ar": "الأمازون إزالة الغابات المطيرة"
-    }
+  amazon_development: {
+    label: '아마존 개발',
+    aliases: ['아마존 개발', '아마존 환경', 'Amazon rainforest deforestation soy', 'Amazon development'],
+    shortKeyword: 'Amazon',
+    queries: {
+      ko: '아마존 개발 아마존 열대우림 벌채',
+      en: 'Amazon rainforest deforestation',
+      pt: 'Amazônia desmatamento floresta amazônica',
+      ja: 'アマゾン 開発 森林破壊',
+      zh: '亚马逊 雨林 砍伐 开发',
+      id: 'Amazon deforestasi hutan hujan',
+      ar: 'الأمازون إزالة الغابات المطيرة',
+    },
   },
-  "ai_regulation": {
-    "label": "AI 규제",
-    "aliases": [
-      "AI 규제",
-      "AI",
-      "AI regulation"
-    ],
-    "shortKeyword": "AI",
-    "queries": {
-      "ko": "AI 규제",
-      "en": "AI regulation",
-      "pt": "regulação IA",
-      "ja": "AI 規制",
-      "zh": "人工智能 监管",
-      "id": "regulasi AI",
-      "ar": "تنظيم الذكاء الاصطناعي"
-    }
-  }
 };
 
 function normalizeSearchText(value) {

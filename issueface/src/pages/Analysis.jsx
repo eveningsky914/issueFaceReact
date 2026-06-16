@@ -4,10 +4,10 @@ import Header from '../components/Header';
 import CountryCard from '../components/CountryCard';
 import CompareStats from '../components/CompareStats';
 import ResultHero from '../components/result/ResultHero';
+import useAnalysisHistorySaver from '../hooks/useAnalysisHistorySaver';
 import useCountries from '../hooks/useCountries';
 import useNewsAnalysis from '../hooks/useNewsAnalysis';
 import { buildAnalysisHeroData } from '../utils/analysisHero';
-import { addHistory, makeCountryPairKey } from '../utils/historyStorage';
 
 function Analysis() {
   const [params] = useSearchParams();
@@ -15,7 +15,6 @@ function Analysis() {
   const { countries } = useCountries();
   const { analyze, result, loading, error } = useNewsAnalysis();
   const called = useRef(false);
-  const savedHistoryId = useRef(null);
 
   const country1Code = params.get('country1');
   const country2Code = params.get('country2');
@@ -51,28 +50,7 @@ function Analysis() {
   const c2Name = c2?.translations?.kor?.common || c2?.name?.common || country2Code;
   const heroData = result ? buildAnalysisHeroData(result) : null;
 
-  useEffect(() => {
-    if (!result || loading) return;
-
-    const countryPairKey = makeCountryPairKey(result.country1Code, result.country2Code);
-    const id = `${countryPairKey}-${result.topic}`;
-    if (savedHistoryId.current === id) return;
-    savedHistoryId.current = id;
-
-    addHistory({
-      id,
-      countryPairKey,
-      country1: result.country1Code,
-      country2: result.country2Code,
-      country1Name: result.country1Name,
-      country2Name: result.country2Name,
-      topic: result.topic,
-      tone1: result.country1?.hasData ? result.country1.tone : null,
-      tone2: result.country2?.hasData ? result.country2.tone : null,
-      summary: result.comparison,
-      savedAt: new Date().toISOString(),
-    });
-  }, [result, loading]);
+  useAnalysisHistorySaver(result, loading);
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
