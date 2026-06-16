@@ -28,49 +28,45 @@ const COUNTRIES = {
 const PRESET_TOPICS = {
   gaza_israel_palestine: {
     label: '이스라엘-팔레스타인',
-    aliases: ['이스라엘-팔레스타인', '가자 이스라엘-팔레스타인', 'Gaza Israel Palestine'],
     shortKeyword: 'Gaza',
     queries: {
-      ko: '가자 이스라엘 팔레스타인',
-      en: 'Gaza Israel Palestine',
-      pt: 'Gaza Israel Palestina',
-      ja: 'ガザ イスラエル パレスチナ',
-      zh: '加沙 以色列 巴勒斯坦',
-      id: 'Gaza Israel Palestina',
-      ar: 'غزة إسرائيل فلسطين',
+      ko: '이스라엘 팔레스타인',
+      en: 'Israel Palestine',
+      pt: 'Israel Palestina',
+      ja: 'イスラエル パレスチナ',
+      zh: '以色列 巴勒斯坦',
+      id: 'Israel Palestina',
+      ar: 'إسرائيل فلسطين',
     },
   },
   taiwan_strait_tensions: {
     label: '대만-중국 분쟁',
-    aliases: ['대만-중국 분쟁', '대만-중국 안보', '대만-중국 갈등', 'Taiwan Strait tensions'],
     shortKeyword: 'Taiwan',
     queries: {
-      ko: '대만 중국 분쟁',
-      en: 'Taiwan Strait tensions',
-      pt: 'tensões Estreito de Taiwan China',
-      ja: '台湾海峡 中国 緊張',
-      zh: '台湾海峡 中国 紧张',
-      id: 'ketegangan Selat Taiwan China',
+      ko: '대만 중국',
+      en: 'Taiwan China',
+      pt: 'Taiwan China',
+      ja: '台湾 中国',
+      zh: '台湾 中国',
+      id: 'Taiwan Tiongkok',
       ar: 'توترات مضيق تايوان الصين',
     },
   },
   immigration_refugees: {
     label: '이민/난민 문제',
-    aliases: ['이민/난민 문제', '이민·난민', 'immigration refugees'],
-    shortKeyword: 'refugees',
+    shortKeyword: 'immigration',
     queries: {
-      ko: '이민 난민 문제',
+      ko: '이민 난민',
       en: 'immigration refugees',
       pt: 'imigração refugiados',
-      ja: '移民 難民 問題',
-      zh: '移民 难民 问题',
+      ja: '移民 難民',
+      zh: '移民 难民',
       id: 'imigrasi pengungsi',
       ar: 'الهجرة اللاجئون',
     },
   },
   euthanasia: {
     label: '안락사',
-    aliases: ['안락사', 'euthanasia'],
     shortKeyword: 'euthanasia',
     queries: {
       ko: '안락사',
@@ -84,28 +80,18 @@ const PRESET_TOPICS = {
   },
   amazon_development: {
     label: '아마존 개발',
-    aliases: ['아마존 개발', '아마존 환경', 'Amazon rainforest deforestation soy', 'Amazon development'],
-    shortKeyword: 'Amazon',
+    shortKeyword: 'Amazon rainforest',
     queries: {
-      ko: '아마존 개발 아마존 열대우림 벌채',
-      en: 'Amazon rainforest deforestation',
-      pt: 'Amazônia desmatamento floresta amazônica',
-      ja: 'アマゾン 開発 森林破壊',
-      zh: '亚马逊 雨林 砍伐 开发',
-      id: 'Amazon deforestasi hutan hujan',
-      ar: 'الأمازون إزالة الغابات المطيرة',
+      ko: '아마존 열대우림',
+      en: 'Amazon rainforest',
+      pt: 'Amazônia desmatamento',
+      ja: 'アマゾン熱帯雨林',
+      zh: '亚马逊雨林',
+      id: 'hutan hujan Amazon',
+      ar: 'غابات الأمازون',
     },
   },
 };
-
-function normalizeSearchText(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[?/]/g, ' ')
-    .replace(/[-_]+/g, ' ')
-    .replace(/\s+/g, ' ');
-}
 
 function escapeRegExp(value) {
   return String(value).replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
@@ -129,20 +115,13 @@ function stripCountryPrefix(value, country) {
   return text;
 }
 
-function findPresetTopic(topicId, keyword) {
+function findPresetTopic(topicId) {
   if (topicId && PRESET_TOPICS[topicId]) return PRESET_TOPICS[topicId];
-
-  const normalized = normalizeSearchText(stripCountryPrefix(keyword || topicId));
-  if (!normalized) return null;
-
-  return Object.values(PRESET_TOPICS).find((topic) => {
-    const candidates = [topic.label, ...(topic.aliases || [])].map(normalizeSearchText);
-    return candidates.includes(normalized);
-  }) || null;
+  return null;
 }
 
 function getSearchKeyword({ keyword, topicId, language, fallbackLanguage, country }) {
-  const preset = findPresetTopic(topicId, keyword);
+  const preset = findPresetTopic(topicId);
   const lang = fallbackLanguage || language;
 
   if (preset?.queries?.[lang]) return preset.queries[lang];
@@ -151,7 +130,7 @@ function getSearchKeyword({ keyword, topicId, language, fallbackLanguage, countr
 }
 
 function getShortSearchKeyword({ keyword, topicId }) {
-  const preset = findPresetTopic(topicId, keyword);
+  const preset = findPresetTopic(topicId);
   if (preset?.shortKeyword) return preset.shortKeyword;
   const cleanKeyword = stripCountryPrefix(keyword);
   return cleanKeyword.split(/\s+/).find((word) => word.length >= 2) || cleanKeyword;

@@ -15,6 +15,7 @@ function Home() {
   const [country2, setCountry2] = useState('');
   const [topicInput, setTopicInput] = useState('');
   const [selectedTopic, setSelectedTopic] = useState('');
+  const [selectedTopicId, setSelectedTopicId] = useState('');
 
   const topic = topicInput || selectedTopic;
 
@@ -50,16 +51,28 @@ function Home() {
       alert('이슈를 선택하거나 입력해주세요.');
       return;
     }
-    navigate(`/analysis?country1=${country1}&country2=${country2}&topic=${encodeURIComponent(topic)}`);
+    const query = new URLSearchParams({
+      country1,
+      country2,
+      topic,
+    });
+
+    if (selectedTopicId) {
+      query.set('topicId', selectedTopicId);
+    }
+
+    navigate(`/analysis?${query.toString()}`);
   };
 
   const handleTopicInputChange = (value) => {
     setTopicInput(value);
     setSelectedTopic('');
+    setSelectedTopicId('');
   };
 
-  const handleTopicSelect = (value) => {
-    setSelectedTopic(value);
+  const handleTopicSelect = (topicOption) => {
+    setSelectedTopic(topicOption.label);
+    setSelectedTopicId(topicOption.id);
     setTopicInput('');
   };
 
@@ -95,7 +108,7 @@ function Home() {
             />
             <TopicSelector
               topicInput={topicInput}
-              selectedTopic={selectedTopic}
+              selectedTopicId={selectedTopicId}
               onTopicInputChange={handleTopicInputChange}
               onTopicSelect={handleTopicSelect}
             />

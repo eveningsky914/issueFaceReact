@@ -3,7 +3,7 @@ import { TOPICS } from '../../data/homeOptions';
 
 function TopicSelector({
   topicInput,
-  selectedTopic,
+  selectedTopicId,
   onTopicInputChange,
   onTopicSelect,
 }) {
@@ -21,16 +21,16 @@ function TopicSelector({
       <div className="flex flex-wrap gap-1.5">
         {TOPICS.map((topic) => (
           <button
-            key={topic}
+            key={topic.id}
             type="button"
             onClick={() => onTopicSelect(topic)}
             className={`text-xs font-body px-2.5 py-1 rounded-full border transition-colors ${
-              selectedTopic === topic
+              selectedTopicId === topic.id
                 ? 'bg-accent text-cream border-accent'
                 : 'bg-cream border-border text-muted hover:border-accent hover:text-accent'
             }`}
           >
-            {topic}
+            {topic.label}
           </button>
         ))}
       </div>

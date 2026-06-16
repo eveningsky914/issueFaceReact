@@ -1,9 +1,9 @@
 export const TOPICS = [
-  '이스라엘-팔레스타인',
-  '대만-중국 분쟁',
-  '이민/난민 문제',
-  '안락사',
-  '아마존 개발',
+  { id: 'gaza_israel_palestine', label: '이스라엘-팔레스타인' },
+  { id: 'taiwan_strait_tensions', label: '대만-중국 분쟁' },
+  { id: 'immigration_refugees', label: '이민/난민 문제' },
+  { id: 'euthanasia', label: '안락사' },
+  { id: 'amazon_development', label: '아마존 개발' },
 ];
 
 export const COUNTRY_GRID = [
