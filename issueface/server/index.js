@@ -7,6 +7,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 const ARTICLE_LIMIT = 10;
+const TARGET_ARTICLE_COUNT = 8;
+const MIN_ARTICLES_BEFORE_EXTRA_PAGES = 5;
+const MAX_CURRENTS_PAGE = 3;
 const CURRENTS_URL = 'https://api.currentsapi.services/v1/search';
 const GOOGLE_NL_URL = 'https://language.googleapis.com/v1/documents:analyzeSentiment';
 
@@ -236,11 +239,42 @@ function buildTextForSentiment(article) {
   return [article.title, article.description].filter(Boolean).join('. ').slice(0, 12000);
 }
 
-async function fetchNewsForCountry({ country, keywords, language, includeCountry = true, tryNumber }) {
+function getArticleKey(article) {
+  const url = String(article.url || '').trim().toLowerCase();
+  if (url) return `url:${url}`;
+
+  const title = String(article.title || '').trim().toLowerCase();
+  const source = String(article.source || '').trim().toLowerCase();
+  return `title:${title}|source:${source}`;
+}
+
+function addUniqueArticles(target, articles, seenKeys, limit = ARTICLE_LIMIT) {
+  let added = 0;
+
+  articles.forEach((article) => {
+    if (target.length >= limit) return;
+    const key = getArticleKey(article);
+    if (!key || seenKeys.has(key)) return;
+    seenKeys.add(key);
+    target.push(article);
+    added += 1;
+  });
+
+  return added;
+}
+
+async function fetchNewsForCountry({
+  country,
+  keywords,
+  language,
+  includeCountry = true,
+  tryNumber,
+  pageNumber = 1,
+}) {
   const url = new URL(CURRENTS_URL);
   url.searchParams.set('apiKey', process.env.CURRENTS_API_KEY);
   url.searchParams.set('keywords', keywords);
-  url.searchParams.set('page_number', '1');
+  url.searchParams.set('page_number', String(pageNumber));
   url.searchParams.set('page_size', String(ARTICLE_LIMIT));
 
   if (includeCountry && country?.code) {
@@ -253,7 +287,7 @@ async function fetchNewsForCountry({ country, keywords, language, includeCountry
 
   const countryLog = includeCountry && country?.code ? country.code : '(none)';
   const languageLog = language || '(none)';
-  console.log('[Currents try ' + tryNumber + '] country=' + countryLog + ' language=' + languageLog + ' keywords="' + keywords + '"');
+  console.log('[Currents try ' + tryNumber + '] page=' + pageNumber + ' country=' + countryLog + ' language=' + languageLog + ' keywords="' + keywords + '"');
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -266,7 +300,7 @@ async function fetchNewsForCountry({ country, keywords, language, includeCountry
   }
 
   const articles = (data.news || []).slice(0, ARTICLE_LIMIT).map(normalizeArticle);
-  console.log('[Currents try ' + tryNumber + '] result count=' + articles.length);
+  console.log('[Currents try ' + tryNumber + '] page=' + pageNumber + ' result count=' + articles.length);
   return articles;
 }
 
@@ -290,42 +324,67 @@ async function fetchNewsWithFallbacks({ country, keyword, topicId }) {
   );
 
   const searchAttempts = [];
+  const collectedArticles = [];
+  const seenArticleKeys = new Set();
+  let firstSearchKeyword = localizedQuery || englishQuery || rawKeyword;
+  let usedFallback = false;
 
   for (const [index, attempt] of attempts.entries()) {
     const tryNumber = index + 1;
-    const articles = await fetchNewsForCountry({
-      country,
-      keywords: attempt.keywords,
-      language: attempt.language,
-      includeCountry: attempt.includeCountry,
-      tryNumber,
-    });
+    const attemptArticles = [];
+    const attemptSeenKeys = new Set();
+    let shouldFetchNextPage = true;
 
-    const attemptLog = {
-      try: tryNumber,
-      country: attempt.includeCountry ? country.code : null,
-      language: attempt.language || null,
-      keywords: attempt.keywords,
-      resultCount: articles.length,
-      fallbackUsed: attempt.fallbackUsed,
-    };
-    searchAttempts.push(attemptLog);
+    for (let pageNumber = 1; pageNumber <= MAX_CURRENTS_PAGE && shouldFetchNextPage; pageNumber += 1) {
+      const articles = await fetchNewsForCountry({
+        country,
+        keywords: attempt.keywords,
+        language: attempt.language,
+        includeCountry: attempt.includeCountry,
+        tryNumber,
+        pageNumber,
+      });
 
-    if (articles.length > 0) {
-      return {
-        articles,
-        searchKeyword: attempt.keywords,
-        searchAttempts,
-        fallbackUsed: attempt.fallbackUsed || !attempt.includeCountry,
+      const uniqueInAttempt = addUniqueArticles(attemptArticles, articles, attemptSeenKeys, ARTICLE_LIMIT);
+      const uniqueAddedToTotal = addUniqueArticles(collectedArticles, articles, seenArticleKeys, ARTICLE_LIMIT);
+
+      const attemptLog = {
+        try: tryNumber,
+        page: pageNumber,
+        country: attempt.includeCountry ? country.code : null,
+        language: attempt.language || null,
+        keywords: attempt.keywords,
+        resultCount: articles.length,
+        uniqueResultCount: uniqueInAttempt,
+        uniqueAddedToTotal,
+        fallbackUsed: attempt.fallbackUsed,
       };
+      searchAttempts.push(attemptLog);
+
+      if (uniqueAddedToTotal > 0 && !firstSearchKeyword) {
+        firstSearchKeyword = attempt.keywords;
+      }
+
+      if (uniqueAddedToTotal > 0 && (attempt.fallbackUsed || !attempt.includeCountry)) {
+        usedFallback = true;
+      }
+
+      shouldFetchNextPage =
+        articles.length > 0 &&
+        attemptArticles.length < MIN_ARTICLES_BEFORE_EXTRA_PAGES &&
+        collectedArticles.length < ARTICLE_LIMIT;
+    }
+
+    if (collectedArticles.length >= TARGET_ARTICLE_COUNT) {
+      break;
     }
   }
 
   return {
-    articles: [],
-    searchKeyword: localizedQuery || englishQuery || rawKeyword,
+    articles: collectedArticles.slice(0, ARTICLE_LIMIT),
+    searchKeyword: firstSearchKeyword || localizedQuery || englishQuery || rawKeyword,
     searchAttempts,
-    fallbackUsed: searchAttempts.some((attempt) => attempt.fallbackUsed),
+    fallbackUsed: usedFallback || searchAttempts.some((attempt) => attempt.fallbackUsed && attempt.uniqueAddedToTotal > 0),
   };
 }
 
