@@ -1,15 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const BACKUP_NEWS = require('./backupNews');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 const ARTICLE_LIMIT = 10;
-const TARGET_ARTICLE_COUNT = 8;
-const MIN_ARTICLES_BEFORE_EXTRA_PAGES = 5;
-const MAX_CURRENTS_PAGE = 3;
+const TARGET_ARTICLE_COUNT = 5;
+const CURRENTS_PAGE_NUMBER = 1;
 const CURRENTS_URL = 'https://api.currentsapi.services/v1/search';
 const GOOGLE_NL_URL = 'https://language.googleapis.com/v1/documents:analyzeSentiment';
 
@@ -30,65 +30,65 @@ const PRESET_TOPICS = {
     label: '이스라엘-팔레스타인',
     shortKeyword: 'Gaza',
     queries: {
-      ko: '이스라엘 팔레스타인',
-      en: 'Israel Palestine',
-      pt: 'Israel Palestina',
-      ja: 'イスラエル パレスチナ',
-      zh: '以色列 巴勒斯坦',
-      id: 'Israel Palestina',
-      ar: 'إسرائيل فلسطين',
+      ko: '가자지구 이스라엘 하마스 휴전',
+      en: 'Gaza Israel Hamas ceasefire',
+      pt: 'Gaza Israel Hamas cessar-fogo',
+      ja: 'ガザ イスラエル ハマス 停戦',
+      zh: '加沙 以色列 哈马斯 停火',
+      id: 'Gaza Israel Hamas gencatan senjata',
+      ar: 'غزة إسرائيل حماس وقف إطلاق النار',
     },
   },
   taiwan_strait_tensions: {
     label: '대만-중국 분쟁',
     shortKeyword: 'Taiwan',
     queries: {
-      ko: '대만 중국',
-      en: 'Taiwan China',
-      pt: 'Taiwan China',
-      ja: '台湾 中国',
-      zh: '台湾 中国',
-      id: 'Taiwan Tiongkok',
-      ar: 'توترات مضيق تايوان الصين',
+      ko: '대만해협 중국 군사훈련',
+      en: 'Taiwan Strait China military drills',
+      pt: 'Estreito de Taiwan China exercícios militares',
+      ja: '台湾海峡 中国 軍事演習',
+      zh: '台海 中国 军演',
+      id: 'Selat Taiwan China latihan militer',
+      ar: 'مضيق تايوان الصين مناورات عسكرية',
     },
   },
   immigration_refugees: {
     label: '이민/난민 문제',
     shortKeyword: 'immigration',
     queries: {
-      ko: '이민 난민',
-      en: 'immigration refugees',
-      pt: 'imigração refugiados',
-      ja: '移民 難民',
-      zh: '移民 难民',
-      id: 'imigrasi pengungsi',
-      ar: 'الهجرة اللاجئون',
+      ko: '이민 난민 국경 정책',
+      en: 'immigration refugees border policy',
+      pt: 'imigração refugiados política de fronteira',
+      ja: '移民 難民 国境政策',
+      zh: '移民 难民 边境政策',
+      id: 'imigrasi pengungsi kebijakan perbatasan',
+      ar: 'الهجرة اللاجئون سياسة الحدود',
     },
   },
   euthanasia: {
     label: '안락사',
     shortKeyword: 'euthanasia',
     queries: {
-      ko: '안락사',
-      en: 'euthanasia',
-      pt: 'eutanásia',
-      ja: '安楽死',
-      zh: '安乐死',
-      id: 'eutanasia',
-      ar: 'القتل الرحيم',
+      ko: '안락사 조력사망 법안',
+      en: 'euthanasia assisted dying bill',
+      pt: 'eutanásia morte assistida projeto de lei',
+      ja: '安楽死 assisted dying 法案',
+      zh: '安乐死 协助死亡 法案',
+      id: 'eutanasia kematian berbantuan RUU',
+      ar: 'القتل الرحيم الموت بمساعدة مشروع قانون',
     },
   },
   amazon_development: {
     label: '아마존 개발',
     shortKeyword: 'Amazon rainforest',
     queries: {
-      ko: '아마존 열대우림',
-      en: 'Amazon rainforest',
-      pt: 'Amazônia desmatamento',
-      ja: 'アマゾン熱帯雨林',
-      zh: '亚马逊雨林',
-      id: 'hutan hujan Amazon',
-      ar: 'غابات الأمازون',
+      ko: '아마존 열대우림 벌채 개발',
+      en: 'Amazon rainforest deforestation development',
+      pt: 'Amazônia desmatamento desenvolvimento',
+      ja: 'アマゾン熱帯雨林 森林破壊 開発',
+      zh: '亚马逊雨林 砍伐 开发',
+      id: 'hutan hujan Amazon deforestasi pembangunan',
+      ar: 'غابات الأمازون إزالة الغابات التنمية',
     },
   },
 };
@@ -132,8 +132,17 @@ function getSearchKeyword({ keyword, topicId, language, fallbackLanguage, countr
 function getShortSearchKeyword({ keyword, topicId }) {
   const preset = findPresetTopic(topicId);
   if (preset?.shortKeyword) return preset.shortKeyword;
-  const cleanKeyword = stripCountryPrefix(keyword);
-  return cleanKeyword.split(/\s+/).find((word) => word.length >= 2) || cleanKeyword;
+
+  const cleanKeyword = String(keyword || '').trim();
+  const words = cleanKeyword.split(/\s+/).filter(Boolean);
+  if (words.length > 1) return words[0];
+
+  const chars = Array.from(cleanKeyword);
+  if (chars.length > 2 && /[^\x00-\x7F]/.test(cleanKeyword)) {
+    return chars.slice(0, 2).join('');
+  }
+
+  return cleanKeyword;
 }
 
 function toToneScore(score) {
@@ -156,7 +165,9 @@ function getToneLabel(toneScore) {
 }
 
 function validateAnalyzeRequest({ country1, country2, keyword, topicId }) {
-  if (!process.env.CURRENTS_API_KEY) return 'CURRENTS_API_KEY is missing.';
+  const canUseOnlyBackup = hasBackupArticles(topicId, country1) && hasBackupArticles(topicId, country2);
+
+  if (!process.env.CURRENTS_API_KEY && !canUseOnlyBackup) return 'CURRENTS_API_KEY is missing.';
   if (!process.env.GOOGLE_NL_API_KEY) return 'GOOGLE_NL_API_KEY is missing.';
   if (!country1 || !country2) return 'country1 and country2 are required.';
   if (country1 === country2) return 'country1 and country2 must be different.';
@@ -167,6 +178,7 @@ function validateAnalyzeRequest({ country1, country2, keyword, topicId }) {
 
 function normalizeArticle(article) {
   return {
+    ...article,
     title: article.title || '',
     description: article.description || '',
     url: article.url || article.link || '',
@@ -174,6 +186,14 @@ function normalizeArticle(article) {
     image: article.image || '',
     source: article.author || article.source || '',
   };
+}
+
+function getBackupArticles(topicId, countryCode) {
+  return BACKUP_NEWS?.[topicId]?.[countryCode] || [];
+}
+
+function hasBackupArticles(topicId, countryCode) {
+  return getBackupArticles(topicId, countryCode).length > 0;
 }
 
 function buildTextForSentiment(article) {
@@ -246,16 +266,48 @@ async function fetchNewsForCountry({
 }
 
 async function fetchNewsWithFallbacks({ country, keyword, topicId }) {
+  const preset = findPresetTopic(topicId);
   const localizedQuery = getSearchKeyword({ keyword, topicId, language: country.language, country });
   const englishQuery = getSearchKeyword({ keyword, topicId, language: country.language, fallbackLanguage: 'en', country });
   const shortKeyword = getShortSearchKeyword({ keyword, topicId });
-  const rawKeyword = stripCountryPrefix(keyword, country);
-  const attempts = [
+  const rawKeyword = preset ? stripCountryPrefix(keyword, country) : String(keyword || '').trim();
+
+  const backupArticles = getBackupArticles(topicId, country.code);
+  if (backupArticles.length > 0) {
+    console.log('[Backup news] topic=' + topicId + ' country=' + country.code + ' count=' + backupArticles.length);
+    return {
+      articles: backupArticles.slice(0, ARTICLE_LIMIT).map(normalizeArticle),
+      searchKeyword: localizedQuery || englishQuery || rawKeyword,
+      searchAttempts: [
+        {
+          try: 1,
+          page: null,
+          country: country.code,
+          language: country.language,
+          keywords: localizedQuery || englishQuery || rawKeyword,
+          resultCount: backupArticles.length,
+          uniqueResultCount: Math.min(backupArticles.length, ARTICLE_LIMIT),
+          uniqueAddedToTotal: Math.min(backupArticles.length, ARTICLE_LIMIT),
+          fallbackUsed: true,
+          source: 'backup',
+        },
+      ],
+      fallbackUsed: true,
+    };
+  }
+
+  const presetAttempts = [
     { keywords: localizedQuery, language: country.language, includeCountry: true, fallbackUsed: false },
-    { keywords: englishQuery, language: '', includeCountry: true, fallbackUsed: false },
-    { keywords: shortKeyword || rawKeyword || englishQuery || localizedQuery, language: '', includeCountry: true, fallbackUsed: true },
-    { keywords: localizedQuery || englishQuery || rawKeyword, language: country.language, includeCountry: false, fallbackUsed: true },
-  ].filter((attempt, index, attemptsList) =>
+    { keywords: englishQuery, language: 'en', includeCountry: true, fallbackUsed: true },
+    { keywords: shortKeyword || englishQuery, language: 'en', includeCountry: true, fallbackUsed: true },
+  ];
+
+  const directAttempts = [
+    { keywords: rawKeyword, language: '', includeCountry: true, fallbackUsed: false },
+    { keywords: shortKeyword || rawKeyword, language: '', includeCountry: true, fallbackUsed: true },
+  ];
+
+  const attempts = (preset ? presetAttempts : directAttempts).filter((attempt, index, attemptsList) =>
     attempt.keywords &&
     attemptsList.findIndex((item) =>
       item.keywords === attempt.keywords &&
@@ -267,53 +319,45 @@ async function fetchNewsWithFallbacks({ country, keyword, topicId }) {
   const searchAttempts = [];
   const collectedArticles = [];
   const seenArticleKeys = new Set();
-  let firstSearchKeyword = localizedQuery || englishQuery || rawKeyword;
+  let firstSearchKeyword = attempts[0]?.keywords || localizedQuery || englishQuery || rawKeyword;
   let usedFallback = false;
 
   for (const [index, attempt] of attempts.entries()) {
     const tryNumber = index + 1;
     const attemptArticles = [];
     const attemptSeenKeys = new Set();
-    let shouldFetchNextPage = true;
 
-    for (let pageNumber = 1; pageNumber <= MAX_CURRENTS_PAGE && shouldFetchNextPage; pageNumber += 1) {
-      const articles = await fetchNewsForCountry({
-        country,
-        keywords: attempt.keywords,
-        language: attempt.language,
-        includeCountry: attempt.includeCountry,
-        tryNumber,
-        pageNumber,
-      });
+    const articles = await fetchNewsForCountry({
+      country,
+      keywords: attempt.keywords,
+      language: attempt.language,
+      includeCountry: attempt.includeCountry,
+      tryNumber,
+      pageNumber: CURRENTS_PAGE_NUMBER,
+    });
 
-      const uniqueInAttempt = addUniqueArticles(attemptArticles, articles, attemptSeenKeys, ARTICLE_LIMIT);
-      const uniqueAddedToTotal = addUniqueArticles(collectedArticles, articles, seenArticleKeys, ARTICLE_LIMIT);
+    const uniqueInAttempt = addUniqueArticles(attemptArticles, articles, attemptSeenKeys, ARTICLE_LIMIT);
+    const uniqueAddedToTotal = addUniqueArticles(collectedArticles, articles, seenArticleKeys, ARTICLE_LIMIT);
 
-      const attemptLog = {
-        try: tryNumber,
-        page: pageNumber,
-        country: attempt.includeCountry ? country.code : null,
-        language: attempt.language || null,
-        keywords: attempt.keywords,
-        resultCount: articles.length,
-        uniqueResultCount: uniqueInAttempt,
-        uniqueAddedToTotal,
-        fallbackUsed: attempt.fallbackUsed,
-      };
-      searchAttempts.push(attemptLog);
+    const attemptLog = {
+      try: tryNumber,
+      page: CURRENTS_PAGE_NUMBER,
+      country: attempt.includeCountry ? country.code : null,
+      language: attempt.language || null,
+      keywords: attempt.keywords,
+      resultCount: articles.length,
+      uniqueResultCount: uniqueInAttempt,
+      uniqueAddedToTotal,
+      fallbackUsed: attempt.fallbackUsed,
+    };
+    searchAttempts.push(attemptLog);
 
-      if (uniqueAddedToTotal > 0 && !firstSearchKeyword) {
-        firstSearchKeyword = attempt.keywords;
-      }
+    if (uniqueAddedToTotal > 0 && !firstSearchKeyword) {
+      firstSearchKeyword = attempt.keywords;
+    }
 
-      if (uniqueAddedToTotal > 0 && (attempt.fallbackUsed || !attempt.includeCountry)) {
-        usedFallback = true;
-      }
-
-      shouldFetchNextPage =
-        articles.length > 0 &&
-        attemptArticles.length < MIN_ARTICLES_BEFORE_EXTRA_PAGES &&
-        collectedArticles.length < ARTICLE_LIMIT;
+    if (uniqueAddedToTotal > 0 && attempt.fallbackUsed) {
+      usedFallback = true;
     }
 
     if (collectedArticles.length >= TARGET_ARTICLE_COUNT) {
@@ -390,6 +434,16 @@ function normalizeSentiment(data) {
 }
 
 async function analyzeArticle(article, language) {
+  const fixedToneScore = Number(article.toneScore);
+  if (Number.isFinite(fixedToneScore)) {
+    return {
+      ...article,
+      toneScore: fixedToneScore,
+      toneLabel: article.toneLabel || getToneLabel(fixedToneScore),
+      sentenceSentiments: article.sentenceSentiments || [],
+    };
+  }
+
   try {
     const sentiment = await analyzeSentiment({ text: buildTextForSentiment(article), language });
     const toneScore = toToneScore(sentiment.score);
