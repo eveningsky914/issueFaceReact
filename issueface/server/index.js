@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
-const BACKUP_NEWS = require('./backupNews');
 
 dotenv.config();
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -167,9 +166,7 @@ function getToneLabel(toneScore) {
 }
 
 function validateAnalyzeRequest({ country1, country2, keyword, topicId }) {
-  const canUseOnlyBackup = hasBackupArticles(topicId, country1) && hasBackupArticles(topicId, country2);
-
-  if (!process.env.CURRENTS_API_KEY && !canUseOnlyBackup) return 'CURRENTS_API_KEY is missing.';
+  if (!process.env.CURRENTS_API_KEY) return 'CURRENTS_API_KEY is missing.';
   if (!process.env.GOOGLE_NL_API_KEY) return 'GOOGLE_NL_API_KEY is missing.';
   if (!country1 || !country2) return 'country1 and country2 are required.';
   if (country1 === country2) return 'country1 and country2 must be different.';
@@ -188,14 +185,6 @@ function normalizeArticle(article) {
     image: article.image || '',
     source: article.author || article.source || '',
   };
-}
-
-function getBackupArticles(topicId, countryCode) {
-  return BACKUP_NEWS?.[topicId]?.[countryCode] || [];
-}
-
-function hasBackupArticles(topicId, countryCode) {
-  return getBackupArticles(topicId, countryCode).length > 0;
 }
 
 function buildTextForSentiment(article) {
@@ -273,30 +262,6 @@ async function fetchNewsWithFallbacks({ country, keyword, topicId }) {
   const englishQuery = getSearchKeyword({ keyword, topicId, language: country.language, fallbackLanguage: 'en', country });
   const shortKeyword = getShortSearchKeyword({ keyword, topicId });
   const rawKeyword = preset ? stripCountryPrefix(keyword, country) : String(keyword || '').trim();
-
-  const backupArticles = getBackupArticles(topicId, country.code);
-  if (backupArticles.length > 0) {
-    console.log('[Backup news] topic=' + topicId + ' country=' + country.code + ' count=' + backupArticles.length);
-    return {
-      articles: backupArticles.slice(0, ARTICLE_LIMIT).map(normalizeArticle),
-      searchKeyword: localizedQuery || englishQuery || rawKeyword,
-      searchAttempts: [
-        {
-          try: 1,
-          page: null,
-          country: country.code,
-          language: country.language,
-          keywords: localizedQuery || englishQuery || rawKeyword,
-          resultCount: backupArticles.length,
-          uniqueResultCount: Math.min(backupArticles.length, ARTICLE_LIMIT),
-          uniqueAddedToTotal: Math.min(backupArticles.length, ARTICLE_LIMIT),
-          fallbackUsed: true,
-          source: 'backup',
-        },
-      ],
-      fallbackUsed: true,
-    };
-  }
 
   const presetAttempts = [
     { keywords: localizedQuery, language: country.language, includeCountry: true, fallbackUsed: false },
@@ -436,16 +401,6 @@ function normalizeSentiment(data) {
 }
 
 async function analyzeArticle(article, language) {
-  const fixedToneScore = Number(article.toneScore);
-  if (Number.isFinite(fixedToneScore)) {
-    return {
-      ...article,
-      toneScore: fixedToneScore,
-      toneLabel: article.toneLabel || getToneLabel(fixedToneScore),
-      sentenceSentiments: article.sentenceSentiments || [],
-    };
-  }
-
   try {
     const sentiment = await analyzeSentiment({ text: buildTextForSentiment(article), language });
     const toneScore = toToneScore(sentiment.score);
